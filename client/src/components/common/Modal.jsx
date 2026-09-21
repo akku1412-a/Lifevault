@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 
 export default function Modal({
@@ -18,7 +19,6 @@ export default function Modal({
       }
     };
 
-    // Prevent the background page from scrolling while modal is open
     const originalOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
 
@@ -32,23 +32,35 @@ export default function Modal({
 
   if (!isOpen) return null;
 
-  return (
+  const modalContent = (
     <div
-      className="fixed inset-0 z-[9999] flex items-center justify-center p-4 animate-fadeIn"
+      className="fixed inset-0 z-[99999] flex items-center justify-center p-4"
       role="dialog"
       aria-modal="true"
       aria-labelledby="modal-title"
     >
       {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
         onClick={onClose}
         aria-hidden="true"
       />
 
-      {/* Modal */}
+      {/* Modal Container */}
       <div
-        className={`relative z-10 w-full ${maxWidth} max-h-[90vh] overflow-y-auto rounded-3xl bg-white dark:bg-[#161617] border border-[#e5e5ea] dark:border-[#262629] text-left shadow-2xl p-6 sm:p-8 animate-scaleIn`}
+        className={`
+          relative z-10
+          w-full ${maxWidth}
+          max-h-[90vh]
+          overflow-y-auto
+          rounded-3xl
+          bg-white dark:bg-[#161617]
+          border border-[#e5e5ea] dark:border-[#262629]
+          text-left
+          shadow-2xl
+          p-6 sm:p-8
+          animate-scaleIn
+        `}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -85,4 +97,7 @@ export default function Modal({
       </div>
     </div>
   );
+
+  // Render directly into <body>
+  return createPortal(modalContent, document.body);
 }
