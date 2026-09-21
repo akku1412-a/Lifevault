@@ -7,6 +7,7 @@ class DocumentController {
   async upload(req, res, next) {
     try {
       let customData = {};
+
       if (req.body.metadata) {
         try {
           customData = JSON.parse(req.body.metadata);
@@ -17,7 +18,11 @@ class DocumentController {
         customData = {
           title: req.body.title,
           category: req.body.category,
-          tags: req.body.tags ? (Array.isArray(req.body.tags) ? req.body.tags : req.body.tags.split(',').map(t => t.trim())) : [],
+          tags: req.body.tags
+            ? (Array.isArray(req.body.tags)
+              ? req.body.tags
+              : req.body.tags.split(',').map(t => t.trim()))
+            : [],
           description: req.body.description
         };
       }
@@ -29,14 +34,24 @@ class DocumentController {
         req
       });
 
-      return ApiResponse.created(res, { document }, 'Document uploaded successfully and queued for AI analysis');
+      return ApiResponse.created(
+        res,
+        { document },
+        'Document uploaded successfully and queued for AI analysis'
+      );
     } catch (err) {
       if (err.code === 'DUPLICATE_DOCUMENT') {
-        return ApiResponse.conflict(res, err.message, 'DUPLICATE_DOCUMENT', {
-          existingDocumentId: err.existingDoc._id,
-          title: err.existingDoc.title
-        });
+        return ApiResponse.conflict(
+          res,
+          err.message,
+          'DUPLICATE_DOCUMENT',
+          {
+            existingDocumentId: err.existingDoc._id,
+            title: err.existingDoc.title
+          }
+        );
       }
+
       next(err);
     }
   }
@@ -47,6 +62,7 @@ class DocumentController {
         userId: req.user._id,
         query: req.query
       });
+
       return ApiResponse.success(res, result);
     } catch (err) {
       next(err);
@@ -62,7 +78,11 @@ class DocumentController {
       });
 
       if (!document) {
-        return ApiResponse.notFound(res, 'Document not found or access denied', 'DOCUMENT_NOT_FOUND');
+        return ApiResponse.notFound(
+          res,
+          'Document not found or access denied',
+          'DOCUMENT_NOT_FOUND'
+        );
       }
 
       return ApiResponse.success(res, { document });
@@ -81,10 +101,18 @@ class DocumentController {
       });
 
       if (!document) {
-        return ApiResponse.notFound(res, 'Document not found or access denied', 'DOCUMENT_NOT_FOUND');
+        return ApiResponse.notFound(
+          res,
+          'Document not found or access denied',
+          'DOCUMENT_NOT_FOUND'
+        );
       }
 
-      return ApiResponse.success(res, { document }, 'Document updated successfully');
+      return ApiResponse.success(
+        res,
+        { document },
+        'Document updated successfully'
+      );
     } catch (err) {
       next(err);
     }
@@ -99,10 +127,18 @@ class DocumentController {
       });
 
       if (!success) {
-        return ApiResponse.notFound(res, 'Document not found or access denied', 'DOCUMENT_NOT_FOUND');
+        return ApiResponse.notFound(
+          res,
+          'Document not found or access denied',
+          'DOCUMENT_NOT_FOUND'
+        );
       }
 
-      return ApiResponse.success(res, null, 'Document deleted successfully');
+      return ApiResponse.success(
+        res,
+        null,
+        'Document deleted successfully'
+      );
     } catch (err) {
       next(err);
     }
@@ -117,13 +153,25 @@ class DocumentController {
       });
 
       if (!document) {
-        return ApiResponse.notFound(res, 'Document not found or access denied', 'DOCUMENT_NOT_FOUND');
+        return ApiResponse.notFound(
+          res,
+          'Document not found or access denied',
+          'DOCUMENT_NOT_FOUND'
+        );
       }
 
       const stream = await storageService.getStream(document.storageKey);
 
+      // Allow the Vercel frontend to embed the PDF preview
+      res.removeHeader('Content-Security-Policy');
+      res.removeHeader('X-Frame-Options');
+
       res.setHeader('Content-Type', document.mimeType);
-      res.setHeader('Content-Disposition', `inline; filename="${encodeURIComponent(document.originalFileName)}"`);
+      res.setHeader(
+        'Content-Disposition',
+        `inline; filename="${encodeURIComponent(document.originalFileName)}"`
+      );
+
       stream.pipe(res);
     } catch (err) {
       next(err);
@@ -139,7 +187,11 @@ class DocumentController {
       });
 
       if (!document) {
-        return ApiResponse.notFound(res, 'Document not found or access denied', 'DOCUMENT_NOT_FOUND');
+        return ApiResponse.notFound(
+          res,
+          'Document not found or access denied',
+          'DOCUMENT_NOT_FOUND'
+        );
       }
 
       const stream = await storageService.getStream(document.storageKey);
@@ -152,7 +204,11 @@ class DocumentController {
       });
 
       res.setHeader('Content-Type', document.mimeType);
-      res.setHeader('Content-Disposition', `attachment; filename="${encodeURIComponent(document.originalFileName)}"`);
+      res.setHeader(
+        'Content-Disposition',
+        `attachment; filename="${encodeURIComponent(document.originalFileName)}"`
+      );
+
       stream.pipe(res);
     } catch (err) {
       next(err);
@@ -168,10 +224,18 @@ class DocumentController {
       });
 
       if (!document) {
-        return ApiResponse.notFound(res, 'Document not found or access denied', 'DOCUMENT_NOT_FOUND');
+        return ApiResponse.notFound(
+          res,
+          'Document not found or access denied',
+          'DOCUMENT_NOT_FOUND'
+        );
       }
 
-      return ApiResponse.success(res, { document }, 'Document reprocessing initiated');
+      return ApiResponse.success(
+        res,
+        { document },
+        'Document reprocessing initiated'
+      );
     } catch (err) {
       next(err);
     }
@@ -183,6 +247,7 @@ class DocumentController {
         userId: req.user._id,
         query: req.query
       });
+
       return ApiResponse.success(res, results);
     } catch (err) {
       next(err);
@@ -194,6 +259,7 @@ class DocumentController {
       const results = await documentService.getExpiringDocuments({
         userId: req.user._id
       });
+
       return ApiResponse.success(res, results);
     } catch (err) {
       next(err);
@@ -205,6 +271,7 @@ class DocumentController {
       const stats = await documentService.getDashboardStats({
         userId: req.user._id
       });
+
       return ApiResponse.success(res, stats);
     } catch (err) {
       next(err);
