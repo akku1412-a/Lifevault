@@ -41,7 +41,7 @@ export default function App() {
         <Route index element={<Navigate to="/app/dashboard" replace />} />
         <Route path="dashboard" element={<DashboardPage />} />
         <Route path="documents" element={<DocumentsPage />} />
-        <Route path="documents/:id" element={<DocumentDetailPage />} />
+        <Route path="documents/:id/*" element={<DocumentDetailPage />} />
         <Route path="upload" element={<UploadPage />} />
         <Route path="categories" element={<CategoriesPage />} />
         <Route path="expiring" element={<ExpiringPage />} />
